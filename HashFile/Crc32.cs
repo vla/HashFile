@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 
-namespace HasFile {
-
-    public class Crc32: FileCheck {
+namespace HasFile
+{
+    public class Crc32 : FileCheck
+    {
         private static readonly uint CrcSeed = 0xFFFFFFFF;
 
         private static readonly uint[] CrcTable = new uint[] {
@@ -69,8 +70,8 @@ namespace HasFile {
             }
         }
 
-        public override void TransformBlock ( Stream stream, Func<int, bool> numberCompleted ) {
-            if ( stream == null ) {
+        public override void TransformBlock(Stream stream, Func<int, bool> numberCompleted) {
+            if (stream == null) {
                 throw new ArgumentNullException("stream");
             }
 
@@ -80,14 +81,14 @@ namespace HasFile {
             long offset = 0;
             int progress = 10;
 
-            while ( offset++ < len ) {
-                if ( (double)offset / (double)len * 100d > progress ) {
-                    if ( numberCompleted(progress+=10) == false ) {
+            while (offset++ < len) {
+                if ((double)offset / (double)len * 100d > progress) {
+                    if (numberCompleted(progress += 10) == false) {
                         return;
                     }
                 }
 
-                crc = CrcTable[( crc ^  (byte)stream.ReadByte() ) & 0xFF] ^ ( crc >> 8 );
+                crc = CrcTable[(crc ^ (byte)stream.ReadByte()) & 0xFF] ^ (crc >> 8);
             }
 
             crc ^= CrcSeed;

@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel;
 
-namespace System {
-
-    public class AsyncFuncCompletedEventArgs<T>: AsyncCompletedEventArgs {
+namespace System
+{
+    public class AsyncFuncCompletedEventArgs<T> : AsyncCompletedEventArgs
+    {
         protected T _result;
 
-        public AsyncFuncCompletedEventArgs ( T result, Exception exception, bool cancelled, object userState )
+        public AsyncFuncCompletedEventArgs(T result, Exception exception, bool cancelled, object userState)
             : base(exception, cancelled, userState) {
             _result = result;
         }
@@ -18,10 +19,11 @@ namespace System {
         }
     }
 
-    public class AsyncFuncProgressChangedEventArgs<T>: ProgressChangedEventArgs {
+    public class AsyncFuncProgressChangedEventArgs<T> : ProgressChangedEventArgs
+    {
         protected T _data;
 
-        public AsyncFuncProgressChangedEventArgs ( T data, int progressPercentage, object userState )
+        public AsyncFuncProgressChangedEventArgs(T data, int progressPercentage, object userState)
             : base(progressPercentage, userState) {
             _data = data;
         }
@@ -33,5 +35,5 @@ namespace System {
         }
     }
 
-    public delegate void AsyncFuncCompletedEventHandler<T> ( object sender, AsyncFuncCompletedEventArgs<T> e );
+    public delegate void AsyncFuncCompletedEventHandler<T>(object sender, AsyncFuncCompletedEventArgs<T> e);
 }
