@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Threading;
 
-namespace System {
-
-    public sealed class AsyncFunc<TResult> {
+namespace System
+{
+    public sealed class AsyncFunc<TResult>
+    {
         private Func<Func<bool>, Action<int>, TResult> _func;
         private SendOrPostCallback _onCompleted;
         private SendOrPostCallback _onProgressChanged;
@@ -13,19 +14,19 @@ namespace System {
 
         private int _status;
 
-        public AsyncFunc ( Func<TResult> func )
-            : this(( isCancelled, reportProgress ) => func(), false, false) {
+        public AsyncFunc(Func<TResult> func)
+            : this((isCancelled, reportProgress) => func(), false, false) {
         }
 
-        public AsyncFunc ( Func<Func<bool>, TResult> func )
-            : this(( isCancelled, reportProgress ) => func(isCancelled), true, false) {
+        public AsyncFunc(Func<Func<bool>, TResult> func)
+            : this((isCancelled, reportProgress) => func(isCancelled), true, false) {
         }
 
-        public AsyncFunc ( Func<Action<int>, TResult> func )
-            : this(( isCancelled, reportProgress ) => func(reportProgress), false, true) {
+        public AsyncFunc(Func<Action<int>, TResult> func)
+            : this((isCancelled, reportProgress) => func(reportProgress), false, true) {
         }
 
-        public AsyncFunc ( Func<Func<bool>, Action<int>, TResult> func )
+        public AsyncFunc(Func<Func<bool>, Action<int>, TResult> func)
             : this(func, true, true) {
         }
 
@@ -35,10 +36,10 @@ namespace System {
         /// <remarks>
         /// Initializes all fields basing on parameters passed from public constructors
         /// </remarks>
-        private AsyncFunc ( Func<Func<bool>, Action<int>, TResult> func, bool isCancellable, bool canReportProgress ) {
+        private AsyncFunc(Func<Func<bool>, Action<int>, TResult> func, bool isCancellable, bool canReportProgress) {
             _func = func;
             _isCancellable = isCancellable;
-            if ( canReportProgress ) {
+            if (canReportProgress) {
                 _onProgressChanged = new SendOrPostCallback(ReportProgressCallback);
             }
             _onCompleted = new SendOrPostCallback(CompletedCallback);
@@ -54,21 +55,20 @@ namespace System {
 
         public bool IsBusy { get { return _isBusy; } }
 
-        public bool TryInvokeAsync () {
+        public bool TryInvokeAsync() {
             return InvokeAsyncCore(true);
         }
 
-        public void InvokeAsync () {
+        public void InvokeAsync() {
             InvokeAsyncCore(false);
         }
 
-        internal bool InvokeAsyncCore ( bool isTry ) {
-            lock ( this ) {
-                if ( _isBusy ) {
-                    if ( isTry ) {
+        internal bool InvokeAsyncCore(bool isTry) {
+            lock (this) {
+                if (_isBusy) {
+                    if (isTry) {
                         return false;
-                    }
-                    else {
+                    } else {
                         throw new InvalidOperationException("Operation is still executing");
                     }
                 }
@@ -81,38 +81,38 @@ namespace System {
             return true;
         }
 
-        public void Cancel () {
-            if ( !_isCancellable ) {
+        public void Cancel() {
+            if (!_isCancellable) {
                 throw new InvalidOperationException("Delegate supplied in constructor doesn't handle cancelation");
             }
             _isCancelled = true; ;
         }
 
-        private void CompletedCallback ( object operationState ) {
+        private void CompletedCallback(object operationState) {
             AsyncFuncCompletedEventArgs<TResult> e = (AsyncFuncCompletedEventArgs<TResult>)operationState;
             AsyncFuncCompletedEventHandler<TResult> snapshot = Completed;
-            if ( snapshot != null ) {
+            if (snapshot != null) {
                 snapshot(Sender, e);
             }
         }
 
-        private void ReportProgressCallback ( object operationState ) {
+        private void ReportProgressCallback(object operationState) {
             ProgressChangedEventArgs e = (ProgressChangedEventArgs)operationState;
             ProgressChangedEventHandler snapshot = ProgressChanged;
-            if ( snapshot != null ) {
+            if (snapshot != null) {
                 snapshot(Sender, e);
             }
         }
 
-        private void ReportProgressChanged ( int progressPercentage, AsyncOperation asyncOp ) {
+        private void ReportProgressChanged(int progressPercentage, AsyncOperation asyncOp) {
             ProgressChangedEventArgs e = new ProgressChangedEventArgs(progressPercentage, asyncOp.UserSuppliedState);
             asyncOp.Post(_onProgressChanged, e);
         }
 
-        private delegate void WorkerDelegate ( AsyncOperation asyncOp );
+        private delegate void WorkerDelegate(AsyncOperation asyncOp);
 
-        private void Worker ( AsyncOperation asyncOp ) {
-            if ( Interlocked.CompareExchange(ref _status, 1, 0) == 1 ) {
+        private void Worker(AsyncOperation asyncOp) {
+            if (Interlocked.CompareExchange(ref _status, 1, 0) == 1) {
                 _isBusy = true;
                 return;
             }
@@ -121,28 +121,25 @@ namespace System {
             Exception error = null;
 
             try {
-                if ( !_isCancelled ) {
-
+                if (!_isCancelled) {
                     // Check if function can check for cancellation
                     Func<bool> isCancelled = null;
-                    if ( _isCancellable ) {
+                    if (_isCancellable) {
                         isCancelled = () => _isCancelled;
                     }
 
                     // Check if function can report progress
                     Action<int> reportProgress = null;
-                    if ( _onProgressChanged != null ) {
-                        reportProgress = ( p ) => ReportProgressChanged(p, asyncOp);
+                    if (_onProgressChanged != null) {
+                        reportProgress = (p) => ReportProgressChanged(p, asyncOp);
                     }
 
                     // Invoke function synchronously
                     result = _func(isCancelled, reportProgress);
                 }
-            }
-            catch ( Exception ex ) {
+            } catch (Exception ex) {
                 error = ex;
-            }
-            finally {
+            } finally {
                 _isBusy = false;
                 AsyncFuncCompletedEventArgs<TResult> e = new AsyncFuncCompletedEventArgs<TResult>(result, error, _isCancelled, null);
                 asyncOp.PostOperationCompleted(_onCompleted, e);

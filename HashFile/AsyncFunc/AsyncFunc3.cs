@@ -1,28 +1,29 @@
 ﻿using System.ComponentModel;
 
-namespace System {
-
-    public sealed class AsyncFunc<T1, T2, T3, TResult> {
+namespace System
+{
+    public sealed class AsyncFunc<T1, T2, T3, TResult>
+    {
         private AsyncFunc<Tuple<T1, T2, T3>, TResult> _func;
 
-        public AsyncFunc ( Func<T1, T2, T3, TResult> func ) {
+        public AsyncFunc(Func<T1, T2, T3, TResult> func) {
             _func = new AsyncFunc<Tuple<T1, T2, T3>, TResult>(
-                ( tuple ) => func(tuple.Item1, tuple.Item2, tuple.Item3));
+                (tuple) => func(tuple.Item1, tuple.Item2, tuple.Item3));
         }
 
-        public AsyncFunc ( Func<T1, T2, T3, Func<bool>, TResult> func ) {
+        public AsyncFunc(Func<T1, T2, T3, Func<bool>, TResult> func) {
             _func = new AsyncFunc<Tuple<T1, T2, T3>, TResult>(
-                ( tuple, isCancelled ) => func(tuple.Item1, tuple.Item2, tuple.Item3, isCancelled));
+                (tuple, isCancelled) => func(tuple.Item1, tuple.Item2, tuple.Item3, isCancelled));
         }
 
-        public AsyncFunc ( Func<T1, T2, T3, Action<int>, TResult> func ) {
+        public AsyncFunc(Func<T1, T2, T3, Action<int>, TResult> func) {
             _func = new AsyncFunc<Tuple<T1, T2, T3>, TResult>(
-                ( tuple, reportProgress ) => func(tuple.Item1, tuple.Item2, tuple.Item3, reportProgress));
+                (tuple, reportProgress) => func(tuple.Item1, tuple.Item2, tuple.Item3, reportProgress));
         }
 
-        public AsyncFunc ( Func<T1, T2, T3, Func<bool>, Action<int>, TResult> func ) {
+        public AsyncFunc(Func<T1, T2, T3, Func<bool>, Action<int>, TResult> func) {
             _func = new AsyncFunc<Tuple<T1, T2, T3>, TResult>(
-                ( tuple, isCancelled, reportProgress ) => func(tuple.Item1, tuple.Item2, tuple.Item3, isCancelled, reportProgress));
+                (tuple, isCancelled, reportProgress) => func(tuple.Item1, tuple.Item2, tuple.Item3, isCancelled, reportProgress));
         }
 
         public object Sender {
@@ -42,19 +43,19 @@ namespace System {
 
         public bool IsBusy { get { return _func.IsBusy; } }
 
-        public bool TryInvokeAsync ( T1 arg1, T2 arg2, T3 arg3 ) {
+        public bool TryInvokeAsync(T1 arg1, T2 arg2, T3 arg3) {
             return InvokeAsyncCore(arg1, arg2, arg3, true);
         }
 
-        public void InvokeAsync ( T1 arg1, T2 arg2, T3 arg3 ) {
+        public void InvokeAsync(T1 arg1, T2 arg2, T3 arg3) {
             InvokeAsyncCore(arg1, arg2, arg3, false);
         }
 
-        internal bool InvokeAsyncCore ( T1 arg1, T2 arg2, T3 arg3, bool isTry ) {
+        internal bool InvokeAsyncCore(T1 arg1, T2 arg2, T3 arg3, bool isTry) {
             return _func.InvokeAsyncCore(new Tuple<T1, T2, T3>(arg1, arg2, arg3), isTry);
         }
 
-        public void Cancel () {
+        public void Cancel() {
             _func.Cancel();
         }
     }
